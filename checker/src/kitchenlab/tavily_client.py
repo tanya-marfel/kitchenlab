@@ -58,7 +58,7 @@ def extract(urls: list[str]) -> dict:
         pages.append(
             {
                 "url": item.get("url") or "",
-                "content": (item.get("raw_content") or item.get("content") or "")[:2000],
+                "content": (item.get("raw_content") or item.get("content") or "")[:18000],
             }
         )
     return {"results": pages}
