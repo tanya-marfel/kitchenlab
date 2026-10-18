@@ -6,8 +6,7 @@ services:
     env_file: .env
     environment:
       CASE_DIR: /data/cases
-      DEMO_ROOT: /demo-target
-      BREACHMIRROR_ROOT: /srv
+      KITCHENLAB_ROOT: /srv
     volumes:
       - cases:/data/cases
     ports:
@@ -21,7 +20,7 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: http
       WEBHOOK_URL: http://localhost:5678/
-      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-breachmirror-local-dev-key}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-kitchenlab-local-dev-key}
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
       N8N_DIAGNOSTICS_ENABLED: "false"
       GENERIC_TIMEZONE: UTC

@@ -13,8 +13,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE = os.environ.get("N8N_URL", "http://localhost:5678")
 EMAIL = os.environ.get("BOOTSTRAP_EMAIL", "judge@example.com")
-PASSWORD = os.environ.get("BOOTSTRAP_PASSWORD", "BreachMirror-demo-1")
-WORKFLOW = ROOT / "n8n" / "workflows" / "breachmirror.json"
+PASSWORD = os.environ.get("BOOTSTRAP_PASSWORD", "KitchenLab-demo-1")
+WORKFLOW = ROOT / "n8n" / "workflows" / "kitchenlab.json"
 
 
 def request(method: str, path: str, payload: dict | None = None, cookie: str = "") -> tuple[int, dict, str]:
@@ -111,7 +111,7 @@ def main() -> None:
     status, _, _ = request("PATCH", f"/rest/workflows/{workflow_id}", {"active": True}, cookie)
     if status not in {200, 201}:
         request("POST", f"/api/v1/workflows/{workflow_id}/activate", cookie=cookie)
-    print(f"Workflow {workflow_id} is ready at {BASE}/webhook/breachmirror")
+    print(f"Workflow {workflow_id} is ready at {BASE}/webhook/kitchenlab")
 
 
 if __name__ == "__main__":
