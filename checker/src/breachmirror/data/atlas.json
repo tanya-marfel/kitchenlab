@@ -1,0 +1,50 @@
+{
+  "version": "2026.05",
+  "source": "https://github.com/mitre-atlas/atlas-data/blob/main/dist/v6/ATLAS-2026.05.yaml",
+  "techniques": [
+    {
+      "id": "AML.T0010.003",
+      "name": "Model",
+      "summary": "AI supply-chain compromise of a model artifact that a victim downloads and loads.",
+      "url": "https://atlas.mitre.org/techniques/AML.T0010.003"
+    },
+    {
+      "id": "AML.T0011.000",
+      "name": "Unsafe AI Artifacts",
+      "summary": "Execution of an unsafe AI artifact, including a model file that runs code when loaded.",
+      "url": "https://atlas.mitre.org/techniques/AML.T0011.000"
+    },
+    {
+      "id": "AML.T0012",
+      "name": "Valid Accounts",
+      "summary": "Use of existing credentials, including API keys, to reach AI resources. Write access is a privilege gain.",
+      "url": "https://atlas.mitre.org/techniques/AML.T0012"
+    },
+    {
+      "id": "AML.T0053",
+      "name": "AI Agent Tool Invocation",
+      "summary": "Use of an agent's connected tools, including tools that call other services or run code.",
+      "url": "https://atlas.mitre.org/techniques/AML.T0053"
+    }
+  ],
+  "mitigations": [
+    {
+      "id": "AML.M0028",
+      "name": "AI Agent Tools Permissions Configuration",
+      "summary": "Apply least privilege and delegated permissions to tools shared by agents.",
+      "url": "https://atlas.mitre.org/mitigations/AML.M0028"
+    },
+    {
+      "id": "AML.M0029",
+      "name": "Human In-the-Loop for AI Agent Actions",
+      "summary": "Require a person to approve agent actions before they run.",
+      "url": "https://atlas.mitre.org/mitigations/AML.M0029"
+    },
+    {
+      "id": "AML.M0030",
+      "name": "Restrict AI Agent Tool Invocation on Untrusted Data",
+      "summary": "Limit automatic tool invocation when untrusted data is in the model context, and require confirmation for high-consequence actions.",
+      "url": "https://atlas.mitre.org/mitigations/AML.M0030"
+    }
+  ]
+}

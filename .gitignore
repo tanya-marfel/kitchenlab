@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.env
+.env.local
+node_modules/
+dist/
+checker/data/cases/
+*.log
+.DS_Store
+n8n/data/
