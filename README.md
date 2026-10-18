@@ -1,51 +1,62 @@
-# BreachMirror
+# KitchenLab
 
-BreachMirror reconstructs a documented security incident and checks which of its prerequisites are visible in one authorized repository.
+KitchenLab investigates a cooking question, compares professional recipes with culinary science, and reports which techniques the retrieved sources support, contradict, or leave open.
 
-The sample incident is the July 2026 OpenAI–Hugging Face intrusion:
+The sample question is crispy oven-roasted potatoes: why recipes disagree, and which steps have published tests behind them.
 
-- Hugging Face, published 16 July 2026: https://huggingface.co/blog/security-incident-july-2026
-- OpenAI, published 26 August 2026: https://openai.com/index/hugging-face-incident-and-the-road-ahead/
-
-The demo target is `demo-target/before` in this repository. The checker reads that tree, or one public GitHub URL. It does not scan other hosts, validate credentials, or claim that a repository is safe.
+The checker looks up techniques in a local culinary catalog and scans the pages Tavily retrieved during that case. It does not cook the dish, scrape private recipes, or claim a method is proven in your kitchen.
 
 ## What a run does
 
-n8n runs three Token Factory agents. The incident investigator searches and extracts with Tavily, then looks up MITRE ATLAS ids. The infrastructure investigator calls the deterministic checker. The threat analyst compares the two. If the authorization check is still unknown, it may call one follow-up that includes `docs/`. The workbench shows the tool calls that were actually recorded.
+n8n runs three Token Factory agents. The recipe investigator searches and extracts professional recipes, then names at most five techniques those pages actually use. The science investigator looks up those techniques in the catalog and searches for food-science explanations. The fact-checker compares the two, marks conflicts, and writes a recipe with a reason for every important step. If a material disagreement is still unknown, it may run one follow-up search. The workbench shows the tool calls that were actually recorded.
 
-Inference uses Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. Set `NEBIUS_MODEL` to the Beam id from the catalog, or to `MiniMaxAI/MiniMax-M3`. Web retrieval uses the Tavily search and extract APIs. The checker stores every retrieved URL and rejects a primary citation that was not retrieved in that case.
+A timed fallback can also compose a report from the pages retrieved so far before all three agents finish. A visible report therefore does not by itself mean the full agent workflow has completed; inspect the recorded activity and evidence gaps.
+
+After a report, ask a what-if such as "What if I skip parboiling?" The experiment simulator explains which properties are expected to change and separates published-test support from predicted outcomes.
+
+Inference uses Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. Set `NEBIUS_MODEL` to the Beam id from the catalog, or to `MiniMaxAI/MiniMax-M3`. Web retrieval uses the Tavily search and extract APIs. The checker stores every retrieved URL and marks a primary citation as unverified if its URL was not retrieved in that case.
 
 ## Run it
 
-Requirements: Docker, a Token Factory key, and a Tavily key.
+Requirements: Git, Docker with Compose, Python 3.11 or newer, a Token Factory key, and a Tavily key.
 
 ```bash
+git clone https://github.com/tanya-marfel/kitchenlab.git
+cd kitchenlab
 cp .env.example .env
 # fill in NEBIUS_API_KEY, NEBIUS_MODEL, and TAVILY_API_KEY
-docker compose up --build
+```
+
+After saving `.env`, export its values for the bootstrap script and start the services:
+
+```bash
+set -a
+source .env
+set +a
+docker compose up --build -d
 python3 scripts/bootstrap.py
 ```
 
-Open http://localhost:8080. Choose **Load sample case**. The header says the case is public sample evidence.
+Open http://localhost:8080. Ask a cooking question in one message, then send. For the sample, ask about crispy oven-roasted potatoes and why recipes disagree.
 
-If bootstrap cannot sign in, open http://localhost:5678, create the owner, and run `python3 scripts/bootstrap.py` again. In the Token Factory credential, set the base URL to `https://api.tokenfactory.nebius.com/v1` and turn off the OpenAI Responses API on the chat model if the node enables it. The model id is `NEBIUS_MODEL`.
+If bootstrap cannot sign in, open http://localhost:5678 and create the owner using the `BOOTSTRAP_EMAIL` and `BOOTSTRAP_PASSWORD` from `.env`. If an owner already exists, update those values to match that account. Re-export `.env` as above and run `python3 scripts/bootstrap.py` again. In the Token Factory credential, set the base URL to `https://api.tokenfactory.nebius.com/v1` and turn off the OpenAI Responses API on the chat model if the node enables it. The model id is `NEBIUS_MODEL`.
 
-A report with no sources means `TAVILY_API_KEY` is missing or was not visible to the checker container.
+A report with no sources can indicate a missing `TAVILY_API_KEY` or a retrieval failure. Check that the key is available to the checker container and inspect `docker compose logs checker n8n`.
 
 ## Checks without the model
 
-Python 3.12 or newer:
+Python 3.11 or newer:
 
 ```bash
 cd checker
-python3.14 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 pytest
-uvicorn breachmirror.api:app --app-dir src --port 8000
+uvicorn kitchenlab.api:app --app-dir src --port 8000
 ```
 
-`pytest` stubs GitHub and does not call Token Factory or Tavily.
+`pytest` stubs the model and does not call Token Factory or Tavily.
 
 ## Workbench during development
 
@@ -59,4 +70,4 @@ The dev server proxies `/api` to the checker on port 8000 and `/hooks` to n8n on
 
 ## Limits
 
-`NOT OBSERVED` means the condition was not found in the inspected files. The simulation re-check only re-evaluates the unpinned model revision against `demo-target/after`. Neither result means the application is secure.
+`NOT OBSERVED` means the technique was not found in the retrieved pages. An experiment only re-evaluates the named change against those pages and the catalog. Neither result was cooked, and neither tests your kitchen.

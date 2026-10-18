@@ -1,46 +1,47 @@
-# BreachMirror
+# KitchenLab
 
-BreachMirror reconstructs one documented security incident, inspects one authorized repository, and reports which attack prerequisites are observed, absent from the inspected scope, or still unknown.
+KitchenLab investigates one cooking question, compares professional recipes with culinary science, and reports which techniques are observed in retrieved sources, contradicted by those sources, or still unknown.
 
 ## Claim boundary
 
-- Identify plausible exposure to previously observed conditions. Do not predict that a breach will occur.
-- `NOT OBSERVED` means the condition was not found in the named scope. It does not mean safe.
-- `OBSERVED` means the configuration was found in inspected files. It does not mean the system was compromised or that an exploit would succeed.
-- Public research mode only. Read public pages, public GitHub content, and `demo-target/`. Do not scan unrelated organizations, access private repositories, validate credentials, or query cloud IAM.
-- Do not write exploit steps, payloads, proof-of-concept code, or reproduction details. Cite the public disclosure and name the condition.
+- Identify plausible techniques and the evidence behind them. Do not claim a recipe is proven in the user's kitchen.
+- `NOT OBSERVED` means the technique was not found in the named retrieved sources. It does not mean the technique fails.
+- `OBSERVED` means the technique appeared in inspected recipe or science pages. It does not mean the method is best.
+- `CONTRADICTED` means retrieved sources disagree. It does not pick a winner by default.
+- Public research mode only. Read public pages retrieved during the case. Do not scrape private recipes, paywall-bypass, or invent citations.
+- Distinguish results supported by published tests from outcomes the system only predicts. Label experiment lines `supported` or `predicted`.
 
 ## Evidence
 
 - Use only these statuses: `OBSERVED`, `REPORTED`, `INFERRED`, `CONTRADICTED`, `UNKNOWN`, `NOT OBSERVED`.
-- A finding needs an incident source and a target source, or an explicit gap when the target evidence does not exist.
+- A finding needs a recipe source and a science source, or an explicit gap when one side was not retrieved.
 - `NOT OBSERVED` always includes the inspected scope.
 - Primary URLs must be URLs Tavily retrieved during that case. Do not invent citations.
-- Target statuses for deterministic checks come from the checker. The analyst may explain them and may request one follow-up when a material condition is `UNKNOWN`.
-- Keep occurred, disclosed, and retrieved dates distinct.
+- Technique statuses for deterministic checks come from the checker. The analyst may explain them and may request one follow-up search when a material conflict is `UNKNOWN`.
+- Keep published and retrieved dates distinct.
 - Research log lines are recorded tool calls and stored conclusion changes only.
+- Cap a case at five techniques extracted from the retrieved pages.
 
-## Incident sample
+## Sample question
 
-The sample incident is the July 2026 OpenAI–Hugging Face intrusion.
+The sample question is crispy oven-roasted potatoes:
 
-- Hugging Face, 16 July 2026: https://huggingface.co/blog/security-incident-july-2026
-- OpenAI, 26 August 2026: https://openai.com/index/hugging-face-incident-and-the-road-ahead/
+- "What's the best way to make crispy oven-roasted potatoes, and why do recipes disagree?"
 
-Keep the two accounts distinct when they differ. Cap exposure at the five prerequisites in the case contract: exposed write-capable credentials, untrusted model or dataset loading, write-capable or networked agent tools, a separate authorization step, and documented isolation.
+For that sample the catalog names parboiling, roughening the surface, baking soda in the cooking water, high-temperature roasting, and drying before oiling.
 
 ## UI
 
-Implement `DESIGN.md`. Do not invent a second visual system, a chat transcript, a marketing page, or a breach-probability score.
+Implement `DESIGN.md`. The interface is a ChatGPT-style thread. Do not add a confidence score or a second visual system.
 
 ## Stack
 
-- n8n orchestrates three Token Factory agents: incident investigator, infrastructure investigator, threat analyst.
+- n8n orchestrates three Token Factory agents: recipe investigator, science investigator, fact-checker.
 - Inference uses `NEBIUS_API_KEY` and `NEBIUS_MODEL` at `https://api.tokenfactory.nebius.com/v1`.
 - Web retrieval uses the Tavily search and extract APIs. The checker records each call.
-- The checker owns case state, ATLAS lookup, and deterministic repository checks.
+- The checker owns case state, the culinary catalog, deterministic technique checks, and the experiment simulator.
 - The workbench polls the case API.
 
 ## Secrets
 
-Never commit or print `NEBIUS_API_KEY`, `TAVILY_API_KEY`, or `GITHUB_TOKEN`. Read them from the environment.
+Never commit or print `NEBIUS_API_KEY` or `TAVILY_API_KEY`. Read them from the environment.
