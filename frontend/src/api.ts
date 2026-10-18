@@ -1,4 +1,4 @@
-import type { Case } from "./types";
+import type { Case, HistoryItem } from "./types";
 
 const ACTIVE = new Set(["QUEUED", "RESEARCHING", "VERIFYING", "MAPPING"]);
 
@@ -6,23 +6,68 @@ export function isActive(stage: Case["stage"]): boolean {
   return ACTIVE.has(stage);
 }
 
-export async function listCases(): Promise<Case[]> {
-  const response = await fetch("/api/cases");
-  if (!response.ok) throw new Error("The case list is unavailable.");
-  return response.json();
+export function awaitingReport(item: {
+  stage: Case["stage"];
+  findings?: unknown[];
+  events?: { summary: string }[];
+  error?: string | null;
+}): boolean {
+  if (item.stage === "FAILED") return false;
+  if (item.stage === "PARTIAL" && item.error) return false;
+  const composed = (item.events || []).some((event) => event.summary.startsWith("Report stored from retrieved pages"));
+  if (composed) return false;
+  if (isActive(item.stage)) return true;
+  return !(item.findings && item.findings.length);
+}
+
+export async function listHistory(): Promise<HistoryItem[]> {
+  const response = await fetch("/api/history");
+  if (response.ok) {
+    const items = (await response.json()) as HistoryItem[];
+    return items.sort((a, b) => (b.updated_at || b.created_at).localeCompare(a.updated_at || a.created_at));
+  }
+  if (response.status !== 404) throw new Error("The question list is unavailable.");
+  const legacy = await fetch("/api/cases");
+  if (!legacy.ok) throw new Error("The question list is unavailable.");
+  const cases = (await legacy.json()) as Case[];
+  return cases
+    .map((item) => ({
+      id: item.id,
+      prompt: item.prompt ?? "",
+      question: item.question,
+      dish: item.dish,
+      sample: item.sample,
+      stage: item.stage,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    }))
+    .sort((a, b) => (b.updated_at || b.created_at).localeCompare(a.updated_at || a.created_at));
 }
 
 export async function getCase(id: string): Promise<Case> {
   const response = await fetch(`/api/cases/${id}`);
-  if (!response.ok) throw new Error("This case was not found.");
+  if (!response.ok) throw new Error("This question was not found.");
   return response.json();
 }
 
-export async function startCase(incident: string, target: string, sample: boolean): Promise<string> {
-  const response = await fetch("/hooks/webhook/breachmirror", {
+export async function interpretMessage(message: string): Promise<{ question: string; dish: string }> {
+  const response = await fetch("/api/interpret", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ incident, target, sample }),
+    body: JSON.stringify({ message }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.detail || "The message could not be interpreted.");
+  }
+  return response.json();
+}
+
+export async function startCase(question: string, dish: string, sample: boolean, prompt = ""): Promise<string> {
+  const response = await fetch("/hooks/webhook/kitchenlab", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, dish, sample, prompt }),
   });
   if (!response.ok) throw new Error("The investigation did not start. The research workflow is unavailable.");
   const body = await response.json();
@@ -30,25 +75,29 @@ export async function startCase(incident: string, target: string, sample: boolea
   return body.id as string;
 }
 
-export async function recheck(id: string): Promise<Case> {
-  const response = await fetch(`/api/cases/${id}/recheck`, {
+export async function savePrompt(id: string, prompt: string): Promise<void> {
+  const response = await fetch(`/api/cases/${id}/prompt`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ check: "unpinned_pretrained" }),
+    body: JSON.stringify({ prompt }),
   });
-  if (!response.ok) throw new Error("The re-check did not complete.");
+  if (!response.ok) throw new Error("The question could not be saved.");
+}
+
+export async function deleteCase(id: string): Promise<void> {
+  const response = await fetch(`/api/cases/${id}`, { method: "DELETE" });
+  if (!response.ok) throw new Error("The question could not be deleted.");
+}
+
+export async function simulate(id: string, change: string): Promise<Case> {
+  const response = await fetch(`/api/cases/${id}/simulate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ change }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.detail || "The experiment did not complete.");
+  }
   return response.json();
-}
-
-export function clock(iso: string): string {
-  const match = iso.match(/T(\d{2}:\d{2}:\d{2})/);
-  return match ? `${match[1]} UTC` : iso;
-}
-
-export function dayStamp(iso: string): string {
-  const [date] = iso.split("T");
-  if (!date) return "DATE UNKNOWN";
-  const [year, month, day] = date.split("-");
-  const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-  return `${day} ${months[Number(month) - 1] || month} ${year}`;
 }

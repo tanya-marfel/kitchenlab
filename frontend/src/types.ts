@@ -19,29 +19,25 @@ export type Source = {
   ref: string;
   title: string;
   url: string | null;
-  source_type: "Primary" | "Independent" | "Documentation" | "Code" | "Unverified";
+  source_type: "Recipe" | "Science" | "Independent" | "Unverified";
   published: string | null;
   retrieved: string | null;
   passage: string | null;
-  repository: string | null;
-  path: string | null;
-  line_start: number | null;
-  line_end: number | null;
 };
 
-export type TimelineEvent = {
+export type Conflict = {
   id: string;
-  title: string;
+  topic: string;
   summary: string;
-  occurred: string;
-  disclosed: string;
-  status: Status;
+  positions: string[];
   source_refs: string[];
+  status: Status;
 };
 
 export type Finding = {
   id: string;
-  prerequisite: string;
+  technique: string;
+  purpose: string;
   observation: string;
   why_it_matters: string;
   limitations: string;
@@ -49,28 +45,63 @@ export type Finding = {
   status: Status;
   scope: string;
   evidence_refs: string[];
-  atlas_ids: string[];
-  mitigation_ids: string[];
   gap: boolean;
+};
+
+export type RecipeStep = {
+  id: string;
+  instruction: string;
+  why: string;
+  technique_id: string | null;
+  evidence_refs: string[];
+  step_order?: number;
+};
+
+export type Recipe = {
+  title: string;
+  servings: string;
+  steps: RecipeStep[];
+  notes: string;
 };
 
 export type ResearchEvent = { at: string; summary: string };
 
 export type Simulation = {
-  label: "SIMULATION";
-  condition: string;
-  before: string;
-  after: string;
-  before_status: Status;
-  after_status: Status;
+  label: "EXPERIMENT";
+  change: string;
+  technique: string;
+  supported: string;
+  predicted: string;
+  supported_status: Status;
+  predicted_status: Status;
   limits: string;
+};
+
+export type Technique = {
+  id: string;
+  name: string;
+  purpose: string;
+  mechanism: string;
+  terms: string[];
+};
+
+export type HistoryItem = {
+  id: string;
+  prompt: string;
+  question: string;
+  dish: string;
+  sample: boolean;
+  stage: Stage;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Case = {
   id: string;
   stamp: string;
-  incident: string;
-  target: string;
+  question: string;
+  dish: string;
+  prompt?: string;
   sample: boolean;
   stage: Stage;
   created_at: string;
@@ -78,20 +109,16 @@ export type Case = {
   scope_label: string;
   events: ResearchEvent[];
   sources: Source[];
-  timeline: TimelineEvent[];
+  conflicts: Conflict[];
   findings: Finding[];
+  techniques: Technique[];
+  recipe: Recipe | null;
   summary_known: string;
   summary_unknown: string;
   open_questions: string[];
   recommendation: string | null;
   recommendation_limits: string | null;
   simulation: Simulation | null;
+  experiment_prompt: string;
   error: string | null;
 };
-
-export type View = "cases" | "investigation" | "exposure" | "sources";
-
-export const SAMPLE_INCIDENT =
-  "July 2026 OpenAI–Hugging Face intrusion. https://huggingface.co/blog/security-incident-july-2026 and https://openai.com/index/hugging-face-incident-and-the-road-ahead/";
-
-export const SAMPLE_TARGET = "demo-target/before";
